@@ -17,6 +17,7 @@ import VerifierDashboard from './pages/VerifierDashboard'
 import PendingValidations from './pages/PendingValidations'
 import ValidationDetail from './pages/ValidationDetail'
 import ValidationHistory from './pages/ValidationHistory'
+import NotFound from './pages/NotFound'
 
 export default function App() {
   return (
@@ -39,6 +40,9 @@ export default function App() {
               <Route path="/verifier/queue" element={<PendingValidations />} />
               <Route path="/verifier/queue/:vaultId" element={<ValidationDetail />} />
               <Route path="/verifier/history" element={<ValidationHistory />} />
+              
+              {/* Catch-all route for unmatched paths */}
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </Layout>
         </BrowserRouter>
