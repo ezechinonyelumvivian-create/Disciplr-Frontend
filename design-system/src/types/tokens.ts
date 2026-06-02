@@ -67,7 +67,7 @@ export interface BorderToken {
 export interface DesignTokens {
   color?: Record<string, ColorToken | Record<string, ColorToken>>;
   typography?: Record<string, TypographyToken>;
-  spacing?: Record<string, SpacingToken>;
+  spacing?: Record<string, SpacingToken | Record<string, SpacingToken>>;
   shadow?: Record<string, ShadowToken>;
   motion?: Record<string, MotionToken>;
   border?: Record<string, BorderToken>;
