@@ -63,6 +63,6 @@ export const Field = React.forwardRef<HTMLInputElement, FieldProps>(
       )}
     </div>
   )
-}
+})
 
 Field.displayName = 'Field'

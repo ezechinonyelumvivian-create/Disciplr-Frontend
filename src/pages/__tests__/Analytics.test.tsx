@@ -1,5 +1,75 @@
-import { describe, expect, it } from 'vitest'
+import React, { Suspense, lazy, act } from 'react'
+import { describe, expect, it, vi, beforeAll } from 'vitest'
+import { render, screen, waitFor } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
 import { buildAnalyticsSeriesColors } from '../analyticsTheme'
+
+// ── Browser API stubs (jsdom doesn't implement these) ─────────────────────────
+
+beforeAll(() => {
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: (query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: () => {},
+      removeListener: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false,
+    }),
+  })
+})
+
+// ── Heavy dep mocks ───────────────────────────────────────────────────────────
+
+vi.mock('recharts', () => ({
+  ResponsiveContainer: ({ children }: any) => <div>{children}</div>,
+  AreaChart: ({ children }: any) => <div>{children}</div>,
+  BarChart: ({ children }: any) => <div>{children}</div>,
+  PieChart: ({ children }: any) => <div>{children}</div>,
+  Area: () => null,
+  Bar: () => null,
+  Pie: () => null,
+  Cell: () => null,
+  XAxis: () => null,
+  YAxis: () => null,
+  CartesianGrid: () => null,
+  Tooltip: () => null,
+  Legend: () => null,
+  LineChart: ({ children }: any) => <div>{children}</div>,
+  Line: () => null,
+}))
+
+vi.mock('jspdf', () => ({
+  default: class {
+    text() {}
+    save() {}
+    addImage() {}
+  },
+}))
+
+vi.mock('../../context/WalletContext', () => ({
+  WalletProvider: ({ children }: any) => <>{children}</>,
+  useWallet: () => ({
+    address: null,
+    network: null,
+    balance: null,
+    isConnecting: false,
+    error: null,
+    connect: async () => {},
+    disconnect: () => {},
+    checkConnection: async () => {},
+  }),
+}))
+
+vi.mock('../../context/ThemeContext', () => ({
+  ThemeProvider: ({ children }: any) => <>{children}</>,
+  useTheme: () => ({ theme: 'light', toggleTheme: () => {} }),
+}))
+
+// ── Theme mapping tests ───────────────────────────────────────────────────────
 
 const tokenFixture = {
   accent: 'accent-token',
@@ -47,3 +117,45 @@ export const analyticsThemeCoverage = [
   'milestone bars map to --accent',
   'axis/grid/tooltip colors map to neutral surface tokens',
 ]
+
+// ── Lazy-route / Suspense tests ───────────────────────────────────────────────
+
+describe('Analytics lazy route', () => {
+  it('Suspense renders skeleton fallback before chunk resolves', async () => {
+    const LazyAnalytics = lazy(
+      // Delay the import so the fallback is visible during the test
+      () => new Promise<{ default: React.ComponentType }>(resolve =>
+        setTimeout(() => import('../Analytics').then(resolve), 50),
+      ),
+    )
+
+    render(
+      <MemoryRouter>
+        <Suspense fallback={<div data-testid="skeleton" />}>
+          <LazyAnalytics />
+        </Suspense>
+      </MemoryRouter>,
+    )
+
+    // Skeleton must be present while chunk is loading
+    expect(screen.getByTestId('skeleton')).toBeTruthy()
+
+    // Wait for the lazy chunk to settle and skeleton to disappear
+    await waitFor(() => expect(screen.queryByTestId('skeleton')).toBeNull(), { timeout: 2000 })
+  })
+
+  it('renders Analytics content after lazy chunk resolves', async () => {
+    const LazyAnalytics = lazy(() => import('../Analytics'))
+
+    render(
+      <MemoryRouter>
+        <Suspense fallback={<div data-testid="skeleton" />}>
+          <LazyAnalytics />
+        </Suspense>
+      </MemoryRouter>,
+    )
+
+    // After the chunk resolves the skeleton must be gone
+    await waitFor(() => expect(screen.queryByTestId('skeleton')).toBeNull(), { timeout: 2000 })
+  })
+})

@@ -1,6 +1,8 @@
+import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { WalletConnectButton } from "./Wallet/WalletConnectButton";
 import { Text } from "./Text";
+import MobileDrawer from "./MobileDrawer";
 
 interface LayoutProps {
   children: React.ReactNode;
