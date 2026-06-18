@@ -1,12 +1,16 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { isAllowed, setAllowed, requestAccess, getAddress, getNetworkDetails } from '@stellar/freighter-api';
+import { fetchUsdcBalance } from '../utils/horizon';
 
 export type WalletNetwork = 'TESTNET' | 'PUBLIC';
+export type BalanceStatus = 'idle' | 'loading' | 'success' | 'no_trustline' | 'error';
 
 interface WalletContextType {
     address: string | null;
     network: WalletNetwork | null;
     balance: string | null;
+    balanceStatus: BalanceStatus;
+    balanceError: string | null;
     isConnecting: boolean;
     error: string | null;
     connect: () => Promise<void>;
@@ -20,18 +24,33 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     const [address, setAddress] = useState<string | null>(null);
     const [network, setNetwork] = useState<WalletNetwork | null>(null);
     const [balance, setBalance] = useState<string | null>(null);
+    const [balanceStatus, setBalanceStatus] = useState<BalanceStatus>('idle');
+    const [balanceError, setBalanceError] = useState<string | null>(null);
     const [isConnecting, setIsConnecting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const fetchNetworkAndBalance = async () => {
+    const normalizeNetwork = (networkName: string): WalletNetwork => {
+        return networkName === 'PUBLIC' ? 'PUBLIC' : 'TESTNET';
+    };
+
+    const fetchNetworkAndBalance = async (pubKey: string) => {
+        setBalanceStatus('loading');
+        setBalanceError(null);
+
         try {
             const netDetails = await getNetworkDetails();
-            setNetwork(netDetails.network as WalletNetwork);
-            // For a real app, you would query the Horizon API here to get the real balance.
-            // For this implementation, we will mock a balance.
-            setBalance('0.00');
+            const activeNetwork = normalizeNetwork(netDetails.network);
+            setNetwork(activeNetwork);
+
+            const usdcBalance = await fetchUsdcBalance(pubKey, activeNetwork);
+            setBalance(usdcBalance.balance);
+            setBalanceStatus(usdcBalance.hasTrustline ? 'success' : 'no_trustline');
         } catch (err) {
             console.error('Failed to get network details', err);
+            const message = err instanceof Error ? err.message : 'Unable to load USDC balance.';
+            setBalance(null);
+            setBalanceStatus('error');
+            setBalanceError(message);
         }
     };
 
@@ -41,7 +60,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
                 const { address: pubKey, error: addrError } = await getAddress();
                 if (pubKey && !addrError) {
                     setAddress(pubKey);
-                    await fetchNetworkAndBalance();
+                    await fetchNetworkAndBalance(pubKey);
                 }
             }
         } catch (err) {
@@ -64,7 +83,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
                 const { address: pubKey, error: addrError } = await getAddress();
                 if (pubKey && !addrError) {
                     setAddress(pubKey);
-                    await fetchNetworkAndBalance();
+                    await fetchNetworkAndBalance(pubKey);
                 } else {
                     setError(addrError || 'Failed to get wallet address.');
                 }
@@ -84,6 +103,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         setAddress(null);
         setNetwork(null);
         setBalance(null);
+        setBalanceStatus('idle');
+        setBalanceError(null);
     };
 
     return (
@@ -92,6 +113,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
                 address,
                 network,
                 balance,
+                balanceStatus,
+                balanceError,
                 isConnecting,
                 error,
                 connect,

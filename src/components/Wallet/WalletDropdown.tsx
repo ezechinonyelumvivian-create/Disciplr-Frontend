@@ -9,7 +9,7 @@ interface WalletDropdownProps {
 }
 
 export function WalletDropdown({ onClose, onSwitch }: WalletDropdownProps) {
-    const { address, balance, network, disconnect } = useWallet();
+    const { address, balance, balanceStatus, balanceError, network, disconnect } = useWallet();
     const [copied, setCopied] = useState(false);
 
     if (!address) return null;
@@ -35,6 +35,43 @@ export function WalletDropdown({ onClose, onSwitch }: WalletDropdownProps) {
         window.open(`${baseUrl}/account/${address}`, '_blank');
     };
 
+    const renderBalance = () => {
+        if (balanceStatus === 'loading') {
+            return (
+                <div className="wallet-dropdown-balance-state" role="status">
+                    <span className="loader" aria-hidden="true" />
+                    Loading USDC balance
+                </div>
+            );
+        }
+
+        if (balanceStatus === 'error') {
+            return (
+                <div className="wallet-dropdown-balance-state error" role="status">
+                    Balance unavailable
+                    {balanceError && <small>{balanceError}</small>}
+                </div>
+            );
+        }
+
+        if (balanceStatus === 'no_trustline') {
+            return (
+                <div>
+                    <div className="wallet-dropdown-balance">
+                        0.00 <span>USDC</span>
+                    </div>
+                    <small className="wallet-dropdown-balance-note">No USDC trustline on this network</small>
+                </div>
+            );
+        }
+
+        return (
+            <div className="wallet-dropdown-balance">
+                {balance !== null ? balance : '-'} <span>USDC</span>
+            </div>
+        );
+    };
+
     return (
         <div className="wallet-dropdown-menu">
             <div className="wallet-dropdown-header">
@@ -44,9 +81,7 @@ export function WalletDropdown({ onClose, onSwitch }: WalletDropdownProps) {
                         {copied ? <Check size={14} color="#10b981" /> : <Copy size={14} />}
                     </button>
                 </div>
-                <div className="wallet-dropdown-balance">
-                    {balance !== null ? balance : '0.00'} <span>USDC</span>
-                </div>
+                {renderBalance()}
             </div>
 
             <div className="wallet-dropdown-actions">
