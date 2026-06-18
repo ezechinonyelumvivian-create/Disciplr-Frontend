@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Text } from './Text';
+import { VaultProgressBar } from './VaultProgressBar';
 import React from 'react';
 
 export type VaultStatus = 'active' | 'pending_validation' | 'completed' | 'failed';
@@ -69,16 +70,14 @@ export default function VaultCard({
           border: '1px solid var(--border)',
           borderRadius: 'var(--radius)',
           padding: '0.875rem 1rem',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-start',
-          flexWrap: 'wrap',
-          gap: 8,
+          display: 'grid',
+          gridTemplateColumns: 'minmax(0, 1fr) auto',
+          gap: '0.75rem',
           marginBottom: 4,
           boxShadow: 'var(--elevated)',
         }}
       >
-        <div>
+        <div style={{ minWidth: 0 }}>
           <Text role="body" as="div" style={{ fontWeight: 600, marginBottom: 2 }}>
             {name}
           </Text>
@@ -95,6 +94,9 @@ export default function VaultCard({
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <StatusBadge status={status} />
+        </div>
+        <div style={{ gridColumn: '1 / -1' }}>
+          <VaultProgressBar value={progressPct} label={`${name} progress`} />
         </div>
       </div>
     </Link>

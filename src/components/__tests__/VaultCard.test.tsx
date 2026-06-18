@@ -48,4 +48,13 @@ describe('VaultCard', () => {
     // Badge should use the accent color variable
     expect(badge).toHaveStyle({ color: 'var(--accent)' });
   });
+
+  it('renders an accessible vault progress bar', () => {
+    renderCard({ ...baseProps, progressPct: 42 });
+
+    expect(
+      screen.getByRole('progressbar', { name: 'Alpha Vault progress' })
+    ).toHaveAttribute('aria-valuenow', '42');
+    expect(screen.getByText('42%')).toBeInTheDocument();
+  });
 });

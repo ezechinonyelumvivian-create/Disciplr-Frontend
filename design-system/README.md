@@ -14,6 +14,11 @@ A comprehensive design system for the Disciplr financial platform.
 
 See `documentation/getting-started.md` for setup instructions.
 
+## Component Documentation
+
+- [`VaultProgressBar`](documentation/vault-progress-bar.md) - shared vault
+  progress primitive with clamped values and ARIA progressbar semantics.
+
 ## Responsive breakpoints
 
 Disciplr uses a five-step breakpoint scale that is shared between CSS, Tailwind v4
