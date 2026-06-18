@@ -29,6 +29,7 @@ export const Field = React.forwardRef<HTMLInputElement, FieldProps>(
         ref={ref}
         id={fieldId}
         required={required}
+        aria-label={label}
         aria-describedby={[errorId, hintId].filter(Boolean).join(' ')}
         aria-invalid={!!error}
         style={{
@@ -63,6 +64,6 @@ export const Field = React.forwardRef<HTMLInputElement, FieldProps>(
       )}
     </div>
   )
-}
+})
 
 Field.displayName = 'Field'

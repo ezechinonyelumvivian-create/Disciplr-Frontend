@@ -1,17 +1,19 @@
 import { useState } from 'react'
 import { Text } from '../components/Text'
 import { Field } from '../components/Field'
+import { EvidenceUpload } from '../components/EvidenceUpload'
 
 export default function CreateVault() {
   const [amount, setAmount] = useState('')
   const [deadline, setDeadline] = useState('')
   const [successAddress, setSuccessAddress] = useState('')
   const [failureAddress, setFailureAddress] = useState('')
+  const [evidenceUrl, setEvidenceUrl] = useState<string | undefined>()
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     // Placeholder: will call backend / contract
-    console.log({ amount, deadline, successAddress, failureAddress })
+    console.log({ amount, deadline, successAddress, failureAddress, evidenceUrl })
   }
 
   return (
@@ -62,6 +64,7 @@ export default function CreateVault() {
           placeholder="G..."
           required
         />
+        <EvidenceUpload onChange={setEvidenceUrl} />
         <button
           type="submit"
           style={{
