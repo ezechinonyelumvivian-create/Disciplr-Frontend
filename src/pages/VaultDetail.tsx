@@ -3,6 +3,10 @@ import { useParams, Link } from "react-router-dom";
 import { MilestoneTracker } from "../components/MilestoneTracker";
 import { VaultProgressBar } from "../components/VaultProgressBar";
 import { CountdownDeadline } from "../components/CountdownDeadline";
+import {
+  FundReleaseStatus,
+  type FundReleaseStatusProps,
+} from "../components/FundReleaseStatus";
 import { Text } from "../components/Text";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -257,6 +261,37 @@ function timelineProgress(created: string, deadline: string): number {
   return Math.min(100, Math.max(0, ((now - start) / (end - start)) * 100));
 }
 
+function settlementForVault(vault: Vault): FundReleaseStatusProps {
+  const releaseTx = vault.transactions.find((tx) => tx.type === "release");
+  const redirectTx = vault.transactions.find((tx) => tx.type === "redirect");
+
+  if (vault.status === "completed") {
+    return {
+      outcome: "released",
+      destinationAddress: vault.successAddress,
+      amount: releaseTx?.amount ?? vault.amount,
+      currency: vault.currency,
+      transaction: releaseTx,
+    };
+  }
+
+  if (vault.status === "failed" || vault.status === "cancelled") {
+    return {
+      outcome: "redirected",
+      destinationAddress: vault.failureAddress,
+      amount: redirectTx?.amount ?? vault.amount,
+      currency: vault.currency,
+      transaction: redirectTx,
+    };
+  }
+
+  return {
+    outcome: "pending",
+    amount: vault.amount,
+    currency: vault.currency,
+  };
+}
+
 // ── Copy Button ───────────────────────────────────────────────────────────────
 function CopyButton({ value }: { value: string }) {
   const [copied, setCopied] = useState(false);
@@ -366,6 +401,7 @@ export default function VaultDetail() {
   const progress = timelineProgress(vault.createdAt, vault.deadline);
   const isActive =
     vault.status === "active" || vault.status === "pending_validation";
+  const settlement = settlementForVault(vault);
 
   return (
     <div
@@ -571,6 +607,8 @@ export default function VaultDetail() {
           </div>
         </Card>
       </div>
+
+      <FundReleaseStatus {...settlement} />
 
       {/* ── Milestones ── */}
       <Card style={{ marginBottom: "1.25rem" }}>
