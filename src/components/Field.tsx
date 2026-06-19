@@ -12,6 +12,7 @@ export const Field = React.forwardRef<HTMLInputElement, FieldProps>(
   const fieldId = id || `field-${label.toLowerCase().replace(/\s+/g, '-')}`
   const errorId = error ? `${fieldId}-error` : undefined
   const hintId = hint ? `${fieldId}-hint` : undefined
+  const describedBy = [errorId, hintId].filter(Boolean).join(' ') || undefined
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
@@ -29,7 +30,8 @@ export const Field = React.forwardRef<HTMLInputElement, FieldProps>(
         ref={ref}
         id={fieldId}
         required={required}
-        aria-describedby={[errorId, hintId].filter(Boolean).join(' ')}
+        aria-label={label}
+        aria-describedby={describedBy}
         aria-invalid={!!error}
         style={{
           width: '100%',
