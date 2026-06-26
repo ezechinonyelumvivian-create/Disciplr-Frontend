@@ -5,10 +5,8 @@ import { useVerifierStore } from '../Zustand/Store';
 export default function VerifierDashboard() {
   const navigate = useNavigate();
   
-  // Pull our mock data from the Zustand store
   const { pendingValidations, validationHistory } = useVerifierStore();
 
-  // Calculate high-level stats
   const totalPending = pendingValidations.length;
   const totalCompleted = validationHistory.length;
   const totalAssigned = totalPending + totalCompleted;
@@ -17,74 +15,76 @@ export default function VerifierDashboard() {
     <div className="flex flex-col gap-6 p-6">
       <header className="mb-4">
         <Text role="display" as="h1">Verifier Dashboard</Text>
-        <Text role="body" as="p" className="text-gray-500 mt-1">
+        <Text role="body" as="p" className="mt-1" style={{ color: 'var(--muted)' }}>
           Overview of your assigned vaults and validation activity.
         </Text>
       </header>
 
-      {/* Overview Stats Cards */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="p-6 border rounded-lg shadow-sm bg-white">
-          <Text role="body" as="p" className="text-gray-500 mb-2">Total Assigned</Text>
+        <div className="p-6 border rounded-lg shadow-sm" style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}>
+          <Text role="body" as="p" className="mb-2" style={{ color: 'var(--muted)' }}>Total Assigned</Text>
           <Text role="display" as="h1">{totalAssigned}</Text>
         </div>
-        <div className="p-6 border rounded-lg shadow-sm bg-white border-l-4 border-l-blue-500">
-          <Text role="body" as="p" className="text-gray-500 mb-2">Pending Validations</Text>
+        <div className="p-6 border rounded-lg shadow-sm border-l-4" style={{ background: 'var(--bg)', borderColor: 'var(--border)', borderLeftColor: 'var(--accent)' }}>
+          <Text role="body" as="p" className="mb-2" style={{ color: 'var(--muted)' }}>Pending Validations</Text>
           <Text role="display" as="h1">{totalPending}</Text>
         </div>
-        <div className="p-6 border rounded-lg shadow-sm bg-white border-l-4 border-l-green-500">
-          <Text role="body" as="p" className="text-gray-500 mb-2">Completed</Text>
+        <div className="p-6 border rounded-lg shadow-sm border-l-4" style={{ background: 'var(--bg)', borderColor: 'var(--border)', borderLeftColor: 'var(--success)' }}>
+          <Text role="body" as="p" className="mb-2" style={{ color: 'var(--muted)' }}>Completed</Text>
           <Text role="display" as="h1">{totalCompleted}</Text>
         </div>
       </section>
 
-      {/* Quick Actions / Navigation */}
       <section className="flex gap-4 mt-4">
-        <button 
+        <button
           onClick={() => navigate('/verifier/queue')}
-          className="px-6 py-3 bg-blue-600 text-white font-medium rounded hover:bg-blue-700 transition"
+          className="px-6 py-3 font-medium rounded transition"
+          style={{ background: 'var(--accent)', color: 'white' }}
         >
           View Pending Queue
         </button>
-        <button 
+        <button
           onClick={() => navigate('/verifier/history')}
-          className="px-6 py-3 border border-gray-300 font-medium rounded hover:bg-gray-50 transition"
+          className="px-6 py-3 border font-medium rounded transition"
+          style={{ borderColor: 'var(--border)', color: 'var(--text)', background: 'transparent' }}
         >
           View History
         </button>
       </section>
 
-      {/* Recent / Urgent Activity Snippet */}
       <section className="mt-8">
         <Text role="display" as="h2" className="mb-4">Urgent Pending Validations</Text>
         <div className="flex flex-col gap-3">
           {pendingValidations.length === 0 ? (
-            <div className="p-8 border rounded shadow-sm text-center text-gray-500 bg-gray-50">
+            <div className="p-8 border rounded shadow-sm text-center" style={{ color: 'var(--muted)', background: 'var(--surface)' }}>
               <Text role="body" as="p">You have no pending validations at this time.</Text>
             </div>
           ) : (
             pendingValidations.slice(0, 3).map((task) => (
-              <div 
-                key={task.id} 
-                className="p-4 border rounded shadow-sm flex flex-col md:flex-row justify-between md:items-center bg-white hover:shadow-md transition gap-4"
+              <div
+                key={task.id}
+                className="p-4 border rounded shadow-sm flex flex-col md:flex-row justify-between md:items-center transition gap-4"
+                style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}
               >
                 <div>
                   <Text role="body" as="h3">{task.vaultName}</Text>
-                  <Text role="body" as="p" className="text-sm text-gray-500 mt-1">
+                  <Text role="body" as="p" className="text-sm mt-1" style={{ color: 'var(--muted)' }}>
                     Milestone: {task.milestone}
                   </Text>
                 </div>
                 <div className="text-left md:text-right">
-                  <Text 
-                    role="body" 
+                  <Text
+                    role="body"
                     as="p"
-                    className={`font-bold ${task.daysRemaining <= 3 ? 'text-red-600' : 'text-gray-700'}`}
+                    className="font-bold"
+                    style={{ color: task.daysRemaining <= 3 ? 'var(--danger)' : 'var(--text)' }}
                   >
                     {task.daysRemaining} days left
                   </Text>
-                  <button 
+                  <button
                     onClick={() => navigate(`/verifier/queue/${task.id}`)}
-                    className="text-blue-600 hover:text-blue-800 font-medium text-sm mt-2"
+                    className="font-medium text-sm mt-2 transition"
+                    style={{ color: 'var(--accent)' }}
                   >
                     Review Now &rarr;
                   </button>

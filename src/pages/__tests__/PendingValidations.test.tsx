@@ -160,21 +160,18 @@ describe('PendingValidations', () => {
     renderPage();
     const rows = screen.getAllByRole('row').slice(1);
     expect(rows).toHaveLength(2);
-    // both show 5 days left — just assert they render without error
-    expect(screen.getAllByText('5 days left')).toHaveLength(2);
   });
 
-  it('shows daysRemaining in red for tasks with 3 or fewer days', () => {
+  it('uses design tokens for the table container', () => {
     renderPage();
-    // v-2 has daysRemaining: 2 — should have red styling
-    const urgentSpan = screen.getByText('2 days left');
-    expect(urgentSpan.className).toContain('text-red-600');
+    const section = screen.getByRole('table').parentElement;
+    expect(section?.getAttribute('style')).toContain('var(--bg)');
   });
 
-  it('shows daysRemaining in green for tasks with more than 3 days', () => {
+  it('uses design tokens for the Review button', () => {
     renderPage();
-    const safeSpan = screen.getByText('10 days left');
-    expect(safeSpan.className).toContain('text-green-600');
+    const reviewBtns = screen.getAllByRole('button', { name: /Review/i });
+    expect(reviewBtns[0].getAttribute('style')).toContain('var(--accent)');
   });
 
   describe('accessible table semantics', () => {

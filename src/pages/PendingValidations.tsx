@@ -81,34 +81,36 @@ export default function PendingValidations() {
         <div>
           <button
             onClick={() => navigate('/verifier')}
-            className="text-gray-500 hover:text-gray-800 mb-2 text-sm font-medium transition"
+            className="mb-2 text-sm font-medium transition"
+            style={{ color: 'var(--muted)' }}
           >
             &larr; Back to Dashboard
           </button>
           <Text role="display" as="h1">Pending Validations</Text>
-          <Text role="body" as="p" className="text-gray-500 mt-1">
+          <Text role="body" as="p" className="mt-1" style={{ color: 'var(--muted)' }}>
             Review and validate milestones submitted by vault owners.
           </Text>
         </div>
 
         <button
           onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-          className="px-4 py-2 border border-gray-300 rounded text-sm font-medium hover:bg-gray-50 transition"
+          className="px-4 py-2 border rounded text-sm font-medium transition"
+          style={{ borderColor: 'var(--border)', color: 'var(--text)', background: 'var(--bg)' }}
         >
           Sort by Urgency: {sortOrder === 'asc' ? 'High to Low' : 'Low to High'}
         </button>
       </header>
 
-      <section className="bg-white border rounded-lg shadow-sm overflow-x-auto">
+      <section className="border rounded-lg shadow-sm overflow-x-auto" style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}>
         {sortedValidations.length === 0 ? (
-          <div className="p-12 text-center text-gray-500">
+          <div className="p-12 text-center" style={{ color: 'var(--muted)' }}>
             <Text role="body" as="h3">All caught up!</Text>
             <Text role="body" as="p" className="mt-2">There are no pending validations in your queue.</Text>
           </div>
         ) : (
           <table className="w-full text-left border-collapse" aria-label="Pending Validations">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-200">
+              <tr className="border-b" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
                 <th scope="col" className="p-4 w-12">
                   <input
                     ref={selectAllRef}
@@ -119,11 +121,11 @@ export default function PendingValidations() {
                     className="h-4 w-4 cursor-pointer accent-blue-600"
                   />
                 </th>
-                <th scope="col" className="p-4 font-medium text-sm text-gray-600">Vault & Milestone</th>
-                <th scope="col" className="p-4 font-medium text-sm text-gray-600">Owner</th>
-                <th scope="col" className="p-4 font-medium text-sm text-gray-600">Amount at Stake</th>
-                <th scope="col" className="p-4 font-medium text-sm text-gray-600" aria-sort={sortOrder === 'asc' ? 'ascending' : 'descending'}>Deadline</th>
-                <th scope="col" className="p-4 font-medium text-sm text-gray-600 text-right">Actions</th>
+                <th scope="col" className="p-4 font-medium text-sm" style={{ color: 'var(--muted)' }}>Vault & Milestone</th>
+                <th scope="col" className="p-4 font-medium text-sm" style={{ color: 'var(--muted)' }}>Owner</th>
+                <th scope="col" className="p-4 font-medium text-sm" style={{ color: 'var(--muted)' }}>Amount at Stake</th>
+                <th scope="col" className="p-4 font-medium text-sm" style={{ color: 'var(--muted)' }} aria-sort={sortOrder === 'asc' ? 'ascending' : 'descending'}>Deadline</th>
+                <th scope="col" className="p-4 font-medium text-sm text-right" style={{ color: 'var(--muted)' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -132,7 +134,8 @@ export default function PendingValidations() {
                 return (
                   <tr
                     key={task.id}
-                    className={`border-b border-gray-100 transition ${checked ? 'bg-blue-50/60' : 'hover:bg-gray-50'}`}
+                    className="border-b transition"
+                    style={{ borderColor: 'var(--border)', background: checked ? 'var(--accent-transparent)' : undefined }}
                   >
                     <td className="p-4">
                       <input
@@ -144,16 +147,16 @@ export default function PendingValidations() {
                       />
                     </td>
                     <td className="p-4">
-                      <Text role="body" as="p" className="font-semibold text-gray-800">{task.vaultName}</Text>
-                      <Text role="body" as="p" className="text-sm text-gray-500 mt-1">{task.milestone}</Text>
+                      <Text role="body" as="p" className="font-semibold" style={{ color: 'var(--text)' }}>{task.vaultName}</Text>
+                      <Text role="body" as="p" className="text-sm mt-1" style={{ color: 'var(--muted)' }}>{task.milestone}</Text>
                     </td>
                     <td className="p-4">
-                      <span className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded font-mono">
+                      <span className="text-xs px-2 py-1 rounded font-mono" style={{ background: 'var(--surface-raised)', color: 'var(--text)' }}>
                         {task.owner}
                       </span>
                     </td>
                     <td className="p-4">
-                      <Text role="body" as="p" className="font-medium text-gray-800">{task.amount}</Text>
+                      <Text role="body" as="p" className="font-medium" style={{ color: 'var(--text)' }}>{task.amount}</Text>
                     </td>
                     <td className="p-4">
                       <div className="flex flex-col">
@@ -170,7 +173,8 @@ export default function PendingValidations() {
                     <td className="p-4 text-right">
                       <button
                         onClick={() => navigate(`/verifier/queue/${task.id}`)}
-                        className="px-4 py-2 bg-blue-50 text-blue-700 rounded hover:bg-blue-100 transition text-sm font-medium"
+                        className="px-4 py-2 rounded transition text-sm font-medium"
+                        style={{ background: 'var(--accent-transparent)', color: 'var(--accent)' }}
                       >
                         Review
                       </button>
@@ -187,9 +191,10 @@ export default function PendingValidations() {
       <div
         role="region"
         aria-label="Batch actions"
-        className="sticky bottom-4 mx-auto w-full max-w-2xl rounded-lg border border-gray-200 bg-white px-4 py-3 shadow-lg flex items-center justify-between gap-4"
+        className="sticky bottom-4 mx-auto w-full max-w-2xl rounded-lg border px-4 py-3 shadow-lg flex items-center justify-between gap-4"
+        style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}
       >
-        <Text role="body" as="span" className="text-sm text-gray-600">
+        <Text role="body" as="span" className="text-sm" style={{ color: 'var(--muted)' }}>
           {selectedIds.length} selected
         </Text>
         <div className="flex gap-3">
