@@ -6,6 +6,9 @@ import { configDefaults } from 'vitest/config';
 
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    alias: { '@': resolve(__dirname, './src') },
+  },
   test: {
     environment: 'jsdom',
     globals: true,

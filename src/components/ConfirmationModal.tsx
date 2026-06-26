@@ -12,6 +12,8 @@ interface ConfirmationModalProps {
   initialDecision?: 'approve' | 'reject';
   initialNotes?: string;
   evidenceUrl?: string;
+  /** When set, the modal confirms a batch action affecting this many tasks. */
+  affectedCount?: number;
 }
 
 /**
@@ -32,6 +34,7 @@ export function ConfirmationModal({
   initialDecision,
   initialNotes = '',
   evidenceUrl,
+  affectedCount,
 }: ConfirmationModalProps) {
   const [decision, setDecision] = useState<'approve' | 'reject' | null>(initialDecision || null);
   const [notes, setNotes] = useState(initialNotes);
@@ -84,6 +87,20 @@ export function ConfirmationModal({
 
               {/* Content */}
               <div className="px-6 py-6 flex flex-col gap-6 overflow-y-auto max-h-[70vh]">
+                {/* Batch summary */}
+                {typeof affectedCount === 'number' && affectedCount > 0 && (
+                  <div
+                    data-testid="batch-affected-count"
+                    className="p-3 rounded-lg bg-gray-100 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700"
+                  >
+                    <Text role="body" as="p" className="text-gray-700 dark:text-gray-300">
+                      This action will affect{' '}
+                      <span className="font-bold">{affectedCount}</span>{' '}
+                      {affectedCount === 1 ? 'validation' : 'validations'}.
+                    </Text>
+                  </div>
+                )}
+
                 {/* Decision Selection */}
                 <div className="flex flex-col gap-3">
                   <Text role="body" as="span" className="font-semibold text-gray-700 dark:text-gray-300">

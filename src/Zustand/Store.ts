@@ -35,6 +35,8 @@ type VerifierStoreType = {
   validationHistory: ValidationTask[];
   approveValidation: (id: string, notes?: string) => void;
   rejectValidation: (id: string, notes?: string) => void;
+  batchApprove: (ids: string[], notes?: string) => void;
+  batchReject: (ids: string[], notes?: string) => void;
 };
 
 // Mock initial data based on the issue requirements
@@ -77,7 +79,7 @@ const initialHistory: ValidationTask[] = [
   }
 ];
 
-export const useVerifierStore = create<VerifierStoreType>((set) => ({
+export const useVerifierStore = create<VerifierStoreType>((set, get) => ({
   pendingValidations: initialPending,
   validationHistory: initialHistory,
   
@@ -107,5 +109,15 @@ export const useVerifierStore = create<VerifierStoreType>((set) => ({
       pendingValidations: newPending,
       validationHistory: [task, ...state.validationHistory]
     };
-  })
+  }),
+
+  // Batch mutators are implemented in terms of the single-task mutators so the
+  // pending -> history transition stays identical for one or many tasks.
+  batchApprove: (ids, notes) => {
+    ids.forEach(id => get().approveValidation(id, notes));
+  },
+
+  batchReject: (ids, notes) => {
+    ids.forEach(id => get().rejectValidation(id, notes));
+  }
 }));
