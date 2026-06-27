@@ -18,6 +18,16 @@ pagination for completed milestone decisions.
 - When filters match no history records, the page renders "No matching
   validations" with guidance to adjust filters.
 
+## Recent Decisions Feed
+
+The Verifier Dashboard (`VerifierDashboard.tsx`) displays a feed of the most recent milestone decisions (up to 5 items) derived from the verifier's validation history.
+
+### Features
+- Displays the most recent `N` history items (capped at 5).
+- Each item includes the vault name, the target milestone, a `StatusChip` representing the status (`Approved` or `Rejected`), and a timestamp (`decidedAt` or `deadline`).
+- A link ("View in History →") is provided for each item to navigate directly to the complete validation history log.
+- Displays an empty state message ("No recent decisions found.") when validation history is empty.
+
 ## Token Usage
 
 The surface uses semantic tokens:

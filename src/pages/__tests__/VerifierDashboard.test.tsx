@@ -168,4 +168,63 @@ describe('VerifierDashboard', () => {
     expect(primaryContainer.className).not.toContain('text-gray-500');
     expect(primaryContainer.className).not.toContain('text-red-600');
   });
+
+  describe('Recent Decisions feed', () => {
+    it('renders the recent decisions section heading', () => {
+      renderPage();
+      expect(screen.getByText('Recent Decisions')).toBeInTheDocument();
+    });
+
+    it('renders recent decisions details correctly', () => {
+      renderPage();
+      expect(screen.getByText('Gamma Vault')).toBeInTheDocument();
+      expect(screen.getByText('Milestone: Phase 3')).toBeInTheDocument();
+      expect(screen.getByText('Approved')).toBeInTheDocument();
+      expect(screen.getByText('2026-05-02')).toBeInTheDocument();
+    });
+
+    it('shows empty message when no history exists', () => {
+      (useVerifierStore as any).mockReturnValue({
+        pendingValidations: [],
+        validationHistory: [],
+      });
+      renderPage();
+      expect(screen.getByText('No recent decisions found.')).toBeInTheDocument();
+    });
+
+    it('navigates to history page when View in History is clicked', () => {
+      renderPage();
+      const viewHistoryBtn = screen.getByRole('button', { name: 'View in History →' });
+      fireEvent.click(viewHistoryBtn);
+      expect(mockNavigate).toHaveBeenCalledWith('/verifier/history');
+    });
+
+    it('renders a maximum of 5 recent decisions', () => {
+      const manyHistoryTasks = Array.from({ length: 8 }, (_, i) => ({
+        id: `h-${i}`,
+        vaultName: `Vault ${i}`,
+        owner: '0xCCCC',
+        amount: '20,000 USDC',
+        deadline: '2026-05-01',
+        daysRemaining: 0,
+        status: i % 2 === 0 ? ('approved' as const) : ('rejected' as const),
+        milestone: `Phase ${i}`,
+        decidedAt: `2026-05-0${i + 1}`,
+      }));
+
+      (useVerifierStore as any).mockReturnValue({
+        pendingValidations: [],
+        validationHistory: manyHistoryTasks,
+      });
+
+      renderPage();
+
+      // Should show the first 5 (Vault 0 to Vault 4)
+      expect(screen.getByText('Vault 0')).toBeInTheDocument();
+      expect(screen.getByText('Vault 4')).toBeInTheDocument();
+      // Should not show Vault 5 to 7
+      expect(screen.queryByText('Vault 5')).not.toBeInTheDocument();
+      expect(screen.queryByText('Vault 7')).not.toBeInTheDocument();
+    });
+  });
 });
