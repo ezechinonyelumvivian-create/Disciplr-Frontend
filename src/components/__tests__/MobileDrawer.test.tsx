@@ -165,3 +165,45 @@ describe('Layout drawer integration', () => {
     expect(trigger).toHaveAttribute('aria-expanded', 'true');
   });
 });
+
+describe('MobileDrawer active links', () => {
+  test('verifier link receives active class and aria-current when on /verifier or subroutes', () => {
+    render(
+      <MemoryRouter initialEntries={['/verifier/queue']}>
+        <MobileDrawer isOpen onClose={vi.fn()} />
+      </MemoryRouter>
+    );
+
+    const verifierLink = screen.getByRole('link', { name: /verifier/i });
+    expect(verifierLink).toHaveAttribute('aria-current', 'page');
+    expect(verifierLink).toHaveClass('active');
+  });
+
+  test('analytics link receives active class and aria-current when on /analytics', () => {
+    render(
+      <MemoryRouter initialEntries={['/analytics']}>
+        <MobileDrawer isOpen onClose={vi.fn()} />
+      </MemoryRouter>
+    );
+
+    const analyticsLink = screen.getByRole('link', { name: /analytics/i });
+    expect(analyticsLink).toHaveAttribute('aria-current', 'page');
+    expect(analyticsLink).toHaveClass('active');
+  });
+
+  test('verifier and analytics links are not active on home route', () => {
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <MobileDrawer isOpen onClose={vi.fn()} />
+      </MemoryRouter>
+    );
+
+    const verifierLink = screen.getByRole('link', { name: /verifier/i });
+    expect(verifierLink).not.toHaveAttribute('aria-current');
+    expect(verifierLink).not.toHaveClass('active');
+
+    const analyticsLink = screen.getByRole('link', { name: /analytics/i });
+    expect(analyticsLink).not.toHaveAttribute('aria-current');
+    expect(analyticsLink).not.toHaveClass('active');
+  });
+});

@@ -55,6 +55,15 @@ git diff --check
 For documentation-only changes, verify every referenced file, CSS variable, and
 component path exists before opening the PR.
 
+## Navigation Structure
+
+The site-wide navigation is defined in `src/components/Layout.tsx` for desktop headers and `src/components/MobileDrawer.tsx` for mobile viewports.
+
+1. **Active State with NavLink**: Use the custom `NavLink` component (`src/components/NavLink.tsx`) for navigation entries. It extends standard `Link` properties and automatically handles active state styling and accessibility features.
+2. **Subroute Activation**: For nested views (such as `/verifier/queue` or `/verifier/history` under `/verifier`), the parent `NavLink` remains active by matching paths using `.startsWith()`.
+3. **Accessibility**: `NavLink` sets `aria-current="page"` when active to assist screen readers and keyboard navigation (consistent with WCAG 2.1 AA).
+4. **Token-Based Styling**: Nav links use CSS variables for theme colors. Active states receive `color: var(--accent)`, and inactive states default to `color: var(--muted)` (header) or `color: var(--text)` (mobile drawer).
+
 ## Related Documentation
 
 - `documentation/token-catalog.md` maps token groups to consumers.

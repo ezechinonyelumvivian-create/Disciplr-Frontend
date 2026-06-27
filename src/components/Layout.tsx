@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Menu } from "lucide-react";
 import { WalletConnectButton } from "./Wallet/WalletConnectButton";
 import MobileDrawer from "./MobileDrawer";
+import NavLink from "./NavLink";
 import { Text } from "./Text";
 import "./Layout.css";
 
@@ -14,7 +15,6 @@ export default function Layout({ children }: LayoutProps) {
   const [isDrawerOpen, setDrawerOpen] = useState(false);
   const toggleDrawer = () => setDrawerOpen(prev => !prev);
   const location = useLocation();
-  const isTransactionsActive = location.pathname === "/transactions";
   const backgroundA11yProps = isDrawerOpen
     ? ({ "aria-hidden": true, inert: "" } as HTMLAttributes<HTMLElement> & { inert: "" })
     : {};
@@ -30,14 +30,10 @@ export default function Layout({ children }: LayoutProps) {
               Disciplr
             </Text>
           </Link>
-          <Link
+          <NavLink
             to="/transactions"
-            className={`header-link${isTransactionsActive ? " active" : ""}`}
-            style={{
-              color: isTransactionsActive ? "var(--accent)" : "var(--muted)",
-            }}
-            aria-label="Transactions"
-            aria-current={isTransactionsActive ? "page" : undefined}
+            className="header-link"
+            ariaLabel="Transactions"
           >
             <span className="header-transactions-label">Transactions</span>
             <span
@@ -47,36 +43,37 @@ export default function Layout({ children }: LayoutProps) {
             >
               ↗
             </span>
-          </Link>
+          </NavLink>
         </div>
 
         <nav className="desktop-nav" {...backgroundA11yProps}>
           <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-            <Link
+            <NavLink
               to="/"
               className="header-link"
-              style={{
-                color:
-                  location.pathname === "/" ? "var(--accent)" : "var(--muted)",
-              }}
             >
               <Text role="caption" as="span">
                 Home
               </Text>
-            </Link>
+            </NavLink>
 
-            <Link
-              to="/analytics"
-              style={{
-                color:
-                  location.pathname === "/analytics"
-                    ? "var(--accent)"
-                    : "var(--muted)",
-                textDecoration: "none",
-              }}
+            <NavLink
+              to="/verifier"
+              className="header-link"
             >
-              Analytics
-            </Link>
+              <Text role="caption" as="span">
+                Verifier
+              </Text>
+            </NavLink>
+
+            <NavLink
+              to="/analytics"
+              className="header-link"
+            >
+              <Text role="caption" as="span">
+                Analytics
+              </Text>
+            </NavLink>
 
             <Link
               to="/vaults/create"

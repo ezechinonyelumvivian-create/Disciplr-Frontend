@@ -55,7 +55,15 @@
   outline: 2px solid var(--accent);
 }
 
+.header-link {
+  color: var(--muted);
+}
+
 .header-link.active {
+  color: var(--accent);
+}
+
+.header-brand .header-link[aria-label="Disciplr home"] {
   color: var(--accent);
 }
 
@@ -205,6 +213,10 @@
 }
 
 .mobile-drawer-link:hover {
+  color: var(--accent);
+}
+
+.mobile-drawer-link.active {
   color: var(--accent);
 }
 
