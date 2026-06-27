@@ -46,11 +46,12 @@ export default function Layout({ children }: LayoutProps) {
           </NavLink>
         </div>
 
-        <nav className="desktop-nav" {...backgroundA11yProps}>
+        <nav className="desktop-nav" aria-label="Main navigation" {...backgroundA11yProps}>
           <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
             <NavLink
               to="/"
               className="header-link"
+              aria-current={location.pathname === "/" ? "page" : undefined}
             >
               <Text role="caption" as="span">
                 Home
@@ -69,13 +70,18 @@ export default function Layout({ children }: LayoutProps) {
             <NavLink
               to="/analytics"
               className="header-link"
+              aria-current={location.pathname === "/analytics" ? "page" : undefined}
             >
               <Text role="caption" as="span">
                 Analytics
               </Text>
             </NavLink>
 
-            <Link to="/vaults/create" className="header-link header-cta">
+            <Link
+              to="/vaults/create"
+              className="header-link header-cta"
+              aria-current={location.pathname === "/vaults/create" ? "page" : undefined}
+            >
               Create Vault
             </Link>
             <WalletConnectButton />
