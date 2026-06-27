@@ -75,18 +75,7 @@ export default function Layout({ children }: LayoutProps) {
               </Text>
             </NavLink>
 
-            <Link
-              to="/vaults/create"
-              style={{
-                color: "var(--surface)",
-                background: "var(--accent)",
-                padding: "0.5rem 1rem",
-                borderRadius: "9999px",
-                textDecoration: "none",
-                fontWeight: 500,
-                fontSize: "0.875rem",
-              }}
-            >
+            <Link to="/vaults/create" className="header-link header-cta">
               Create Vault
             </Link>
             <WalletConnectButton />
