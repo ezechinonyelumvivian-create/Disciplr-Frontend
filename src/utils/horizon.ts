@@ -26,7 +26,7 @@ interface HorizonBalanceLine {
     asset_type: string;
     asset_code?: string;
     asset_issuer?: string;
-    balance: string;
+    balance?: unknown;
 }
 
 interface HorizonAccountResponse {
@@ -44,6 +44,14 @@ export function horizonUrl(network: WalletNetwork) {
     return HORIZON_URLS[network];
 }
 
+function isFiniteNumericString(value: unknown): value is string {
+    if (typeof value !== 'string' || value.length === 0) {
+        return false;
+    }
+
+    return /^[+-]?(?:\d+\.?\d*|\.\d+)$/.test(value) && Number.isFinite(Number(value));
+}
+
 export async function fetchUsdcBalance(
     address: string,
     network: WalletNetwork,
@@ -51,33 +59,31 @@ export async function fetchUsdcBalance(
     { signal, timeoutMs = 10000 }: { signal?: AbortSignal; timeoutMs?: number } = {},
 ): Promise<UsdcBalanceResult> {
     const issuer = USDC_ISSUERS[network];
-    
     const controller = new AbortController();
     const combinedSignal = signal ? AbortSignal.any([signal, controller.signal]) : controller.signal;
-    
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-    
+
     try {
         const response = await fetcher(`${horizonUrl(network)}/accounts/${encodeURIComponent(address)}`, {
             signal: combinedSignal,
         });
 
-    if (response.status === 404) {
-        throw new HorizonBalanceError('ACCOUNT_NOT_FOUND', 'Stellar account was not found on Horizon.');
-    }
+        if (response.status === 404) {
+            throw new HorizonBalanceError('ACCOUNT_NOT_FOUND', 'Stellar account was not found on Horizon.');
+        }
 
-    if (!response.ok) {
-        throw new HorizonBalanceError(
-            'REQUEST_FAILED',
-            `Horizon balance request failed with status ${response.status}.`,
-        );
-    }
+        if (!response.ok) {
+            throw new HorizonBalanceError(
+                'REQUEST_FAILED',
+                `Horizon balance request failed with status ${response.status}.`,
+            );
+        }
 
-    const account = (await response.json()) as HorizonAccountResponse;
+        const account = (await response.json()) as HorizonAccountResponse;
 
-    if (!Array.isArray(account.balances)) {
-        throw new HorizonBalanceError('INVALID_RESPONSE', 'Horizon account response did not include balances.');
-    }
+        if (!Array.isArray(account.balances)) {
+            throw new HorizonBalanceError('INVALID_RESPONSE', 'Horizon account response did not include balances.');
+        }
 
         const usdcBalance = account.balances.find(
             (balanceLine) =>
@@ -85,6 +91,13 @@ export async function fetchUsdcBalance(
                 balanceLine.asset_code === 'USDC' &&
                 balanceLine.asset_issuer === issuer,
         );
+
+        if (usdcBalance && !isFiniteNumericString(usdcBalance.balance)) {
+            throw new HorizonBalanceError(
+                'INVALID_RESPONSE',
+                'Horizon USDC balance was missing or not a finite numeric string.',
+            );
+        }
 
         return {
             balance: usdcBalance?.balance ?? '0.00',
