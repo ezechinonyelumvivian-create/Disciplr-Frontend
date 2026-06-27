@@ -3,14 +3,17 @@ import { Text } from "../components/Text";
 import { Field } from "../components/Field";
 import type { CreateVaultErrors } from "../utils/vaultValidation";
 import {
+  exceedsBalance,
   hasCreateVaultErrors,
   validateCreateVault,
 } from "../utils/vaultValidation";
 import { EvidenceUpload } from "../components/EvidenceUpload";
 import { CreateVaultReview } from "../components/CreateVaultReview";
 import { formatUsdcInput, parseUsdcInput } from "../utils/usdcInput";
+import { useWallet } from "../context/WalletContext";
 
 export default function CreateVault() {
+  const { balance, balanceStatus } = useWallet();
   const [amount, setAmount] = useState("");
   const [deadline, setDeadline] = useState("");
   const [successAddress, setSuccessAddress] = useState("");
@@ -94,6 +97,14 @@ export default function CreateVault() {
             error={errors.amount}
             required
           />
+          {balanceStatus === 'success' && exceedsBalance(amount, balance) && (
+            <p
+              role="status"
+              style={{ color: 'var(--warning)', margin: 0, fontSize: '0.875rem' }}
+            >
+              Amount exceeds your available USDC balance ({balance}).
+            </p>
+          )}
           <Field
             label="Deadline (ISO date)"
             type="datetime-local"
