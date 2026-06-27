@@ -323,7 +323,13 @@ function exportCSV(txs: Transaction[]): void {
 }
 
 // ── Main Component ────────────────────────────────────────────────────────────
-export default function VaultTransactions() {
+interface VaultTransactionsProps {
+  transactions?: Transaction[];
+}
+
+export default function VaultTransactions({
+  transactions = MOCK_TRANSACTIONS,
+}: VaultTransactionsProps = {}) {
   const [filterType, setFilterType] = useState<string>("All Types");
   const [filterVault, setFilterVault] = useState<string>("All Vaults");
   const [filterStatus, setFilterStatus] = useState<string>("all");
@@ -342,7 +348,7 @@ export default function VaultTransactions() {
   }, []);
 
   const filtered = useMemo<Transaction[]>(() => {
-    let list = [...MOCK_TRANSACTIONS];
+    let list = [...transactions];
     if (filterType !== "All Types")
       list = list.filter((t) => t.type === filterType);
     if (filterVault !== "All Vaults")
@@ -371,6 +377,7 @@ export default function VaultTransactions() {
     amountMin,
     amountMax,
     sortDir,
+    transactions,
   ]);
 
   const pending = filtered.filter((t) => t.status === "pending");
@@ -386,11 +393,11 @@ export default function VaultTransactions() {
 
   const stats = useMemo(
     () => ({
-      total: MOCK_TRANSACTIONS.length,
-      fees: MOCK_TRANSACTIONS.reduce((s, t) => s + t.fee, 0),
-      capital: MOCK_TRANSACTIONS.reduce((s, t) => s + t.amount, 0),
+      total: transactions.length,
+      fees: transactions.reduce((s, t) => s + t.fee, 0),
+      capital: transactions.reduce((s, t) => s + t.amount, 0),
     }),
-    [],
+    [transactions],
   );
 
   const clearFilters = () => {

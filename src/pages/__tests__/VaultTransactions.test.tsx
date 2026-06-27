@@ -1,6 +1,31 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { WINDOW_SIZE, WINDOW_THRESHOLD } from '../../utils/windowRange';
 import VaultTransactions from '../VaultTransactions';
+
+const TX_TYPES = ['create', 'validate', 'release', 'redirect'] as const;
+
+function buildTransaction(index: number, status: 'confirmed' | 'pending' | 'failed' = 'confirmed') {
+  const hashPrefix = status === 'confirmed' ? 'aa' : status === 'pending' ? 'cc' : 'dd';
+  return {
+    id: `win-tx-${index}`,
+    type: TX_TYPES[index % TX_TYPES.length],
+    vault: `Vault ${index % 3}`,
+    amount: 1000 + index,
+    fee: 0.0001,
+    block: 48_000_000 + index,
+    hash: `${hashPrefix}${String(index).padStart(62, '0')}`,
+    status,
+    from: 'GFROM123...ADDR',
+    to: 'GTO12345...ADDR',
+    timestamp: new Date(FIXED_NOW - index * 60_000),
+    memo: '',
+  };
+}
+
+function buildConfirmedList(count: number) {
+  return Array.from({ length: count }, (_, index) => buildTransaction(index, 'confirmed'));
+}
 
 function renderPage() {
   return render(<VaultTransactions />);
@@ -379,6 +404,109 @@ describe('VaultTransactions with small list', () => {
     const rows = document.querySelectorAll('.vt-tx-row');
     expect(rows.length).toBeGreaterThan(0);
     expect(rows.length).toBeLessThan(10);
+  });
+});
+
+describe('VaultTransactions windowing threshold rendering', () => {
+  beforeEach(() => {
+    Object.assign(navigator, {
+      clipboard: { writeText: vi.fn().mockResolvedValue(undefined) },
+    });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('renders all rows when the confirmed list is below WINDOW_THRESHOLD', () => {
+    const transactions = buildConfirmedList(WINDOW_THRESHOLD - 1);
+
+    render(<VaultTransactions transactions={transactions} />);
+
+    expect(document.querySelectorAll('.vt-tx-row')).toHaveLength(WINDOW_THRESHOLD - 1);
+    expect(document.querySelector('.vt-window-banner')).toBeNull();
+  });
+
+  it('renders all rows at exactly WINDOW_THRESHOLD without windowing', () => {
+    const transactions = buildConfirmedList(WINDOW_THRESHOLD);
+
+    render(<VaultTransactions transactions={transactions} />);
+
+    expect(document.querySelectorAll('.vt-tx-row')).toHaveLength(WINDOW_THRESHOLD);
+    expect(document.querySelector('.vt-window-banner')).toBeNull();
+  });
+
+  it('renders at most WINDOW_SIZE rows when the confirmed list exceeds the threshold', () => {
+    const transactions = buildConfirmedList(WINDOW_THRESHOLD + 5);
+
+    render(<VaultTransactions transactions={transactions} />);
+
+    expect(document.querySelectorAll('.vt-tx-row')).toHaveLength(WINDOW_SIZE);
+    expect(screen.getByText(`Showing 1–${WINDOW_SIZE} of ${WINDOW_THRESHOLD + 5}`)).toBeInTheDocument();
+  });
+
+  it('keeps section headers and row metadata for windowed rows', () => {
+    const transactions = buildConfirmedList(WINDOW_THRESHOLD + 10);
+
+    render(<VaultTransactions transactions={transactions} />);
+
+    expect(screen.getByRole('table', { name: /Confirmed transactions/i })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: /Transaction Type/i })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: /Status/i })).toBeInTheDocument();
+
+    const statusBadges = document.querySelectorAll('.vt-tx-status');
+    expect(statusBadges).toHaveLength(WINDOW_SIZE);
+    statusBadges.forEach((badge) => {
+      expect(badge.textContent).toContain('Confirmed');
+    });
+
+    const typeLabels = Array.from(document.querySelectorAll('.vt-tx-type')).map((el) => el.textContent?.trim());
+    expect(typeLabels).toHaveLength(WINDOW_SIZE);
+    typeLabels.forEach((label) => {
+      expect(['Create', 'Validate', 'Release', 'Redirect']).toContain(label);
+    });
+  });
+
+  it('renders the empty confirmed state when no transactions are provided', () => {
+    render(<VaultTransactions transactions={[]} />);
+
+    expect(document.querySelectorAll('.vt-tx-row')).toHaveLength(0);
+    expect(document.querySelector('.vt-window-banner')).toBeNull();
+    expect(screen.getByText('No transactions yet')).toBeInTheDocument();
+  });
+
+  it('updates visible rows when the transactions prop changes', () => {
+    const firstBatch = buildConfirmedList(WINDOW_THRESHOLD + 5);
+    const secondBatch = buildConfirmedList(WINDOW_THRESHOLD + 5).map((tx, index) => ({
+      ...tx,
+      id: `updated-${index}`,
+      hash: `bb${String(index).padStart(62, '0')}`,
+    }));
+
+    const { rerender } = render(<VaultTransactions transactions={firstBatch} />);
+
+    expect(document.querySelectorAll('.vt-tx-row')).toHaveLength(WINDOW_SIZE);
+    expect(screen.getAllByTitle('Copy hash')[0].textContent).toContain('aa000000');
+
+    rerender(<VaultTransactions transactions={secondBatch} />);
+
+    expect(document.querySelectorAll('.vt-tx-row')).toHaveLength(WINDOW_SIZE);
+    const hashButtons = screen.getAllByTitle('Copy hash');
+    expect(hashButtons[0].textContent).toContain('bb000000');
+    expect(hashButtons.some((btn) => btn.textContent?.includes('aa000000'))).toBe(false);
+  });
+
+  it('advances the visible window when Next is clicked', () => {
+    const transactions = buildConfirmedList(WINDOW_THRESHOLD + 15);
+
+    render(<VaultTransactions transactions={transactions} />);
+
+    expect(screen.getByText(`Showing 1–${WINDOW_SIZE} of ${WINDOW_THRESHOLD + 15}`)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /Next/i }));
+
+    expect(screen.getByText(`Showing 11–${WINDOW_SIZE + 10} of ${WINDOW_THRESHOLD + 15}`)).toBeInTheDocument();
+    expect(document.querySelectorAll('.vt-tx-row')).toHaveLength(WINDOW_SIZE);
   });
 });
 
