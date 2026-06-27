@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback, memo } from "react";
 import { windowRange, WINDOW_THRESHOLD } from "../utils/windowRange";
 import { toCsv, downloadCsv } from "../utils/csv";
 import { AddressDisplay } from "../components/AddressDisplay";
+import { Tooltip } from "../components/Tooltip";
 import type { TxType, TxStatus } from "../types/vault";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -663,17 +664,18 @@ const TxRow = memo(function TxRow({ tx, onSelect, onCopy, copiedId, children }: 
           {tx.memo && <span className="vt-tx-memo">"{tx.memo}"</span>}
         </div>
         <div className="vt-tx-bottom">
-          <button
-            className="vt-tx-hash"
-            onClick={(e) => {
-              e.stopPropagation();
-              onCopy(tx.hash, tx.id + "-hash");
-            }}
-            title="Copy hash"
-          >
-            {copiedId === tx.id + "-hash" ? "Copied!" : truncHash(tx.hash)}
-            <CopyIcon small />
-          </button>
+          <Tooltip content={tx.hash} position="top">
+            <button
+              className="vt-tx-hash"
+              onClick={(e) => {
+                e.stopPropagation();
+                onCopy(tx.hash, tx.id + "-hash");
+              }}
+            >
+              {copiedId === tx.id + "-hash" ? "Copied!" : truncHash(tx.hash)}
+              <CopyIcon small />
+            </button>
+          </Tooltip>
           <a
             href={`https://stellar.expert/explorer/testnet/tx/${tx.hash}`}
             target="_blank"
