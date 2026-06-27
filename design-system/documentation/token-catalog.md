@@ -30,6 +30,8 @@ components to the design system.
 
 ## Validation Entry Points
 
+> 📝 **Adding a new token?** Please refer to the [Token Authoring Guide](./token-authoring.md) for required formats, naming conventions, and validation rules.
+
 Token shape validation lives in `design-system/src/utils/validators.ts`:
 
 - `isValidHexColor`, `isValidRgbColor`, `isValidHslColor`, and
