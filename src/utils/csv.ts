@@ -1,8 +1,17 @@
 import type { ValidationTask } from '../Zustand/Store';
 import type { Transaction } from '../pages/VaultTransactions';
 
+export type AnalyticsRow = {
+  name: string;
+  success: number;
+  failed: number;
+  capital: number;
+  milestones: number;
+};
+
 const TASK_HEADERS: string[] = ['ID', 'Status', 'Vault Name', 'Owner', 'Amount', 'Deadline', 'Milestone', 'Notes'];
 const TX_HEADERS: string[] = ['ID', 'Type', 'Vault', 'Amount (XLM)', 'Fee (XLM)', 'Status', 'Timestamp', 'Hash', 'Block', 'From', 'To', 'Memo'];
+const ANALYTICS_HEADERS: string[] = ['Period', 'Success %', 'Failed %', 'Capital (USDC)', 'Milestones'];
 
 function escapeCell(value: string): string {
   if (value.length > 0 && /^[=+\-@\t\r]/.test(value)) {
@@ -28,6 +37,17 @@ function taskToRow(task: ValidationTask): string {
   return cells.map(escapeCell).join(',');
 }
 
+function analyticsRowToRow(row: AnalyticsRow): string {
+  const cells = [
+    row.name,
+    String(row.success),
+    String(row.failed),
+    String(row.capital),
+    String(row.milestones),
+  ];
+  return cells.map(escapeCell).join(',');
+}
+
 function txToRow(tx: Transaction): string {
   const cells = [
     tx.id,
@@ -48,8 +68,14 @@ function txToRow(tx: Transaction): string {
 
 export function toCsv(tasks: ValidationTask[]): string;
 export function toCsv(txs: Transaction[], type: 'transactions'): string;
-export function toCsv(data: Array<ValidationTask | Transaction>, type?: 'transactions'): string {
-  if (type === 'transactions') {
+export function toCsv(rows: AnalyticsRow[], type: 'analytics'): string;
+export function toCsv(data: Array<ValidationTask | Transaction | AnalyticsRow>, type?: 'transactions' | 'analytics'): string {
+  if (type === 'analytics') {
+    const headerRow = ANALYTICS_HEADERS.join(',');
+    if (data.length === 0) return headerRow;
+    const rows = (data as AnalyticsRow[]).map(analyticsRowToRow);
+    return [headerRow, ...rows].join('\r\n');
+  } else if (type === 'transactions') {
     const headerRow = TX_HEADERS.join(',');
     if (data.length === 0) return headerRow;
     const rows = (data as Transaction[]).map(txToRow);

@@ -14,6 +14,7 @@ import { useRef } from 'react'
 import { useTheme } from '../context/ThemeContext'
 import { ChartLegend } from '../components/ChartLegend'
 import { buildAnalyticsSeriesColors, getAnalyticsChartTokens } from './analyticsTheme'
+import { toCsv, downloadCsv } from '../utils/csv'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -221,21 +222,6 @@ function EmptyState({ message = 'No data yet. Create your first vault to see ana
   )
 }
 
-// ─── Export Helpers ───────────────────────────────────────────────────────────
-
-function exportCSV(data: typeof allData['30d']) {
-  const headers = ['Period', 'Success %', 'Failed %', 'Capital (USDC)', 'Milestones']
-  const rows = data.map(d => [d.name, d.success, d.failed, d.capital, d.milestones])
-  const csv = [headers, ...rows].map(r => r.join(',')).join('\n')
-  const blob = new Blob([csv], { type: 'text/csv' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = 'disciplr-analytics.csv'
-  a.click()
-  URL.revokeObjectURL(url)
-}
-
 // Note: `jsPDF` is lazy-loaded inside the component to keep the Analytics chunk small.
 
 // ─── Main Component ───────────────────────────────────────────────────────────
@@ -365,6 +351,7 @@ export default function Analytics() {
           transition: all 0.15s;
         }
         .action-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .action-btn:disabled { opacity: 0.45; cursor: not-allowed; }
         input[type="date"] {
           background: var(--surface);
           color: var(--text);
@@ -464,11 +451,11 @@ export default function Analytics() {
             {showComparison ? '✓' : ''} Compare Periods
           </button>
 
-          {/* Spacer */}
+{/* Spacer */}
           <div style={{ flex: 1 }} />
 
           {/* Export Buttons */}
-          <button className="action-btn" onClick={() => exportCSV(chartData)}>
+          <button className="action-btn" onClick={() => downloadCsv(toCsv(chartData, 'analytics'), `disciplr-analytics-${period}.csv`)} disabled={chartData.length === 0}>
             <Download size={14} /> CSV
           </button>
           <button
