@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { WalletNetwork } from '../context/WalletContext';
+import { isValidStellarAddress } from '../utils/stellarAddress';
 
 interface AddressDisplayProps {
     address: string;
@@ -24,6 +25,7 @@ export function AddressDisplay({
 }: AddressDisplayProps) {
     const [copied, setCopied] = useState(false);
 
+    const isValid = isValidStellarAddress(address);
     const display = truncate(address, chars, tailChars);
 
     const copy = () => {
@@ -42,9 +44,14 @@ export function AddressDisplay({
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
             <span
                 role="text"
-                title={address}
-                aria-label={`Address ${address}`}
-                style={{ fontFamily: 'monospace', fontSize: 'inherit' }}
+                title={isValid ? address : `Invalid address: ${address}`}
+                aria-label={isValid ? `Address ${address}` : `Invalid address ${address}`}
+                style={{ 
+                    fontFamily: 'monospace', 
+                    fontSize: 'inherit',
+                    color: isValid ? 'inherit' : 'var(--error)',
+                    textDecoration: isValid ? 'none' : 'line-through' 
+                }}
             >
                 {display}
             </span>
@@ -67,7 +74,7 @@ export function AddressDisplay({
                 {copied ? '✓' : '⎘'}
             </button>
 
-            {network != null && (
+            {network != null && isValid && (
                 <a
                     href={`${explorerBase}/${address}`}
                     target="_blank"
