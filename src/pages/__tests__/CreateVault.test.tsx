@@ -257,4 +257,58 @@ describe("CreateVault", () => {
 
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
+
+  /* ------------------------------------------------------------------ */
+  /*  Deadline preset buttons                                            */
+  /* ------------------------------------------------------------------ */
+  it("renders deadline preset buttons", () => {
+    render(<CreateVault />);
+
+    expect(screen.getByRole("button", { name: "7 days" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "30 days" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "90 days" })).toBeInTheDocument();
+  });
+
+  it("preset buttons populate deadline field with future timestamp", () => {
+    render(<CreateVault />);
+
+    const now = new Date();
+    fireEvent.click(screen.getByRole("button", { name: "7 days" }));
+
+    const deadlineInput = screen.getByLabelText(/deadline/i);
+    const value = deadlineInput.getAttribute("value");
+    expect(value).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/);
+
+    const futureDate = new Date(value!);
+    expect(futureDate.getTime()).toBeGreaterThan(now.getTime());
+  });
+
+  it("selecting preset clears deadline error", () => {
+    const consoleDebug = vi
+      .spyOn(console, "debug")
+      .mockImplementation(() => undefined);
+    render(<CreateVault />);
+
+    fireEvent.click(screen.getByRole("button", { name: /create vault/i }));
+    expect(screen.getByText("Choose a future deadline.")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "30 days" }));
+    expect(screen.queryByText("Choose a future deadline.")).not.toBeInTheDocument();
+  });
+
+  it("computed deadline satisfies isFutureDeadline validation", () => {
+    const consoleDebug = vi
+      .spyOn(console, "debug")
+      .mockImplementation(() => undefined);
+    render(<CreateVault />);
+
+    fillField(/amount/i, "100");
+    fillField(/success destination/i, successAddress);
+    fillField(/failure destination/i, failureAddress);
+
+    fireEvent.click(screen.getByRole("button", { name: "90 days" }));
+    fireEvent.click(screen.getByRole("button", { name: /create vault/i }));
+
+    expect(screen.queryByText("Choose a future deadline.")).not.toBeInTheDocument();
+  });
 });

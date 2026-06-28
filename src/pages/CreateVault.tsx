@@ -12,6 +12,7 @@ import { CreateVaultReview } from "../components/CreateVaultReview";
 import { formatUsdcInput, parseUsdcInput } from "../utils/usdcInput";
 import { logger } from "../utils/logger";
 import { useWallet } from "../context/WalletContext";
+import { DEADLINE_PRESETS, computeFutureDeadline, getPresetLabel } from "../utils/deadlinePresets";
 
 export default function CreateVault() {
   const { balance, balanceStatus } = useWallet();
@@ -98,25 +99,50 @@ export default function CreateVault() {
             error={errors.amount}
             required
           />
-          {balanceStatus === 'success' && exceedsBalance(amount, balance) && (
-            <p
-              role="status"
-              style={{ color: 'var(--warning)', margin: 0, fontSize: '0.875rem' }}
-            >
-              Amount exceeds your available USDC balance ({balance}).
-            </p>
-          )}
-          <Field
-            label="Deadline (ISO date)"
-            type="datetime-local"
-            value={deadline}
-            onChange={(e) => {
-              setDeadline(e.target.value);
-              setErrors((current) => ({ ...current, deadline: undefined }));
-            }}
-            error={errors.deadline}
-            required
-          />
+{balanceStatus === 'success' && exceedsBalance(amount, balance) && (
+             <p
+               role="status"
+               style={{ color: 'var(--warning)', margin: 0, fontSize: '0.875rem' }}
+             >
+               Amount exceeds your available USDC balance ({balance}).
+             </p>
+           )}
+           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+             {DEADLINE_PRESETS.map((preset) => (
+               <button
+                 key={preset}
+                 type="button"
+                 onClick={() => {
+                   const days = parseInt(preset, 10)
+                   setDeadline(computeFutureDeadline(days))
+                   setErrors((current) => ({ ...current, deadline: undefined }))
+                 }}
+                 style={{
+                   padding: '0.4rem 0.875rem',
+                   border: '1px solid var(--border)',
+                   background: 'var(--surface)',
+                   color: 'var(--muted)',
+                   borderRadius: 'var(--radius)',
+                   fontSize: '0.85rem',
+                   cursor: 'pointer',
+                   transition: 'all 0.15s',
+                 }}
+               >
+                 {getPresetLabel(preset)}
+               </button>
+             ))}
+           </div>
+           <Field
+             label="Deadline (ISO date)"
+             type="datetime-local"
+             value={deadline}
+             onChange={(e) => {
+               setDeadline(e.target.value);
+               setErrors((current) => ({ ...current, deadline: undefined }));
+             }}
+             error={errors.deadline}
+             required
+           />
           <Field
             label="Success destination (Stellar address)"
             type="text"
